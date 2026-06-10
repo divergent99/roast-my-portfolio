@@ -74,6 +74,15 @@ export default function RoastCard({ content, onClose, theme }) {
     link.download = 'roast-card.png'
     link.href = canvas.toDataURL()
     link.click()
+
+    if (typeof pendo !== 'undefined') {
+      pendo.track('roast_card_downloaded', {
+        themeId: theme.id,
+        statsCount: stats.length,
+        bulletsCount: bullets.length,
+        contentLength: content?.length || 0,
+      })
+    }
   }
 
   return (

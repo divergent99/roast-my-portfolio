@@ -44,12 +44,42 @@ export const useChat = () => {
         ? { ...s, messages: [...s.messages, assistantMsg] }
         : s
       ))
+
+      if (typeof pendo !== 'undefined') {
+        pendo.track('roast_generated', {
+          persona: settings?.persona,
+          vibe: settings?.vibe,
+          language: settings?.language,
+          intensity: settings?.intensity,
+          responseLength: settings?.responseLength,
+          portfolioType: settings?.portfolioType,
+          riskAppetite: settings?.riskAppetite,
+          experienceLevel: settings?.experienceLevel,
+          showRealTalk: settings?.showRealTalk,
+          hasImage: !!image,
+          messageLength: text?.length || 0,
+          sessionMessageCount: updatedMessages.length + 1,
+          isFirstMessage: isFirst,
+        })
+      }
     } catch (err) {
       console.error(err)
       setSessions(prev => prev.map(s => s.id === sessionId
         ? { ...s, messages: [...s.messages, { role: 'assistant', content: 'Something went wrong. Try again.' }] }
         : s
       ))
+
+      if (typeof pendo !== 'undefined') {
+        pendo.track('roast_generation_failed', {
+          persona: settings?.persona,
+          vibe: settings?.vibe,
+          language: settings?.language,
+          intensity: settings?.intensity,
+          hasImage: !!image,
+          errorMessage: String(err?.message || err).substring(0, 100),
+          sessionMessageCount: updatedMessages.length,
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -57,7 +87,15 @@ export const useChat = () => {
 
   const newSession = useCallback(() => {
     const s = createSession()
-    setSessions(prev => [s, ...prev])
+    setSessions(prev => {
+      if (typeof pendo !== 'undefined') {
+        pendo.track('session_created', {
+          totalSessionCount: prev.length + 1,
+          sessionId: String(s.id),
+        })
+      }
+      return [s, ...prev]
+    })
     setActiveSessionId(s.id)
   }, [])
 
@@ -67,11 +105,28 @@ export const useChat = () => {
 
   const renameSession = useCallback((id, title) => {
     setSessions(prev => prev.map(s => s.id === id ? { ...s, title } : s))
+
+    if (typeof pendo !== 'undefined') {
+      pendo.track('session_renamed', {
+        sessionId: String(id),
+        newTitleLength: title?.length || 0,
+      })
+    }
   }, [])
 
   const deleteSession = useCallback((id) => {
     setSessions(prev => {
+      const deletedSession = prev.find(s => s.id === id)
       const remaining = prev.filter(s => s.id !== id)
+
+      if (typeof pendo !== 'undefined') {
+        pendo.track('session_deleted', {
+          sessionId: String(id),
+          remainingSessionCount: remaining.length,
+          sessionMessageCount: deletedSession?.messages?.length || 0,
+        })
+      }
+
       if (remaining.length === 0) {
         const fresh = createSession()
         setActiveSessionId(fresh.id)

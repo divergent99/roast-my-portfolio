@@ -36,6 +36,12 @@ function CopyButton({ text, theme }) {
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+
+    if (typeof pendo !== 'undefined') {
+      pendo.track('roast_text_copied', {
+        contentLength: text?.length || 0,
+      })
+    }
   }
   return (
     <motion.button
@@ -162,6 +168,15 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
   const handleFile = (file, type) => {
     setAttachment({ file, type, name: file.name, preview: type === 'image' ? URL.createObjectURL(file) : null })
     setShowAttachMenu(false)
+
+    if (typeof pendo !== 'undefined') {
+      pendo.track('portfolio_image_uploaded', {
+        fileType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+        attachmentType: type,
+      })
+    }
   }
 
   const lastRoast = [...session.messages].reverse().find(m => m.role === 'assistant')

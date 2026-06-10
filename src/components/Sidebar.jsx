@@ -103,7 +103,25 @@ function SectionLabel({ children }) {
 }
 
 export default function Sidebar({ settings, onChange, theme, sessions, activeSession, onSelectSession, onNewSession }) {
-  const set = (key, val) => onChange({ ...settings, [key]: val })
+  const set = (key, val) => {
+    onChange({ ...settings, [key]: val })
+
+    if (typeof pendo !== 'undefined') {
+      pendo.track('roast_settings_configured', {
+        settingKey: key,
+        settingValue: String(val),
+        persona: key === 'persona' ? val : settings.persona,
+        vibe: key === 'vibe' ? val : settings.vibe,
+        language: key === 'language' ? val : settings.language,
+        intensity: key === 'intensity' ? val : settings.intensity,
+        responseLength: key === 'responseLength' ? val : settings.responseLength,
+        portfolioType: key === 'portfolioType' ? val : settings.portfolioType,
+        riskAppetite: key === 'riskAppetite' ? val : settings.riskAppetite,
+        experienceLevel: key === 'experienceLevel' ? val : settings.experienceLevel,
+        showRealTalk: key === 'showRealTalk' ? val : settings.showRealTalk,
+      })
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3" style={{ fontFamily: 'Inter, sans-serif' }}>
