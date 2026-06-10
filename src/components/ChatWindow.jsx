@@ -51,89 +51,6 @@ function CopyButton({ text, theme }) {
   )
 }
 
-function SessionMenu({ session, theme, onRename, onDelete }) {
-  const [open, setOpen] = useState(false)
-  const [renaming, setRenaming] = useState(false)
-  const [newName, setNewName] = useState(session.title)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    setNewName(session.title)
-  }, [session.title])
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  const handleRename = () => {
-    if (newName.trim()) onRename(session.id, newName.trim())
-    setRenaming(false)
-    setOpen(false)
-  }
-
-  return (
-    <div className="relative flex items-center gap-2" ref={ref}>
-      {renaming ? (
-        <input
-          autoFocus
-          value={newName}
-          onChange={e => setNewName(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') handleRename()
-            if (e.key === 'Escape') setRenaming(false)
-          }}
-          onBlur={handleRename}
-          className={`bg-transparent border-b ${theme.accentBorder} outline-none text-sm ${theme.title} w-64`}
-          style={{ fontFamily: 'Inter, sans-serif' }}
-        />
-      ) : (
-        <button
-          onClick={() => setOpen(v => !v)}
-          className={`flex items-center gap-1.5 text-sm font-medium ${theme.title} hover:opacity-70 transition`}
-          style={{ fontFamily: 'Inter, sans-serif' }}
-        >
-          <span className="max-w-xs truncate">{session.title}</span>
-          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.15 }}>
-            <ChevronDown size={13} className={theme.muted} />
-          </motion.div>
-        </button>
-      )}
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.97 }}
-            transition={{ duration: 0.15 }}
-            className={`absolute top-8 left-0 rounded-xl border ${theme.divider} overflow-hidden shadow-2xl z-50`}
-            style={{ background: 'rgba(10,10,14,0.98)', backdropFilter: 'blur(20px)', minWidth: '180px' }}
-          >
-            <button
-              onClick={() => { setRenaming(true); setNewName(session.title); setOpen(false) }}
-              className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-xs ${theme.unselected} hover:bg-white/5 transition`}
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              <Pencil size={12} className={theme.muted} /> Rename
-            </button>
-            <button
-              onClick={() => { onDelete(session.id); setOpen(false) }}
-              className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-xs hover:bg-white/5 transition border-t ${theme.divider}`}
-              style={{ fontFamily: 'Inter, sans-serif', color: '#ef4444' }}
-            >
-              <Trash2 size={12} style={{ color: '#ef4444' }} /> Delete
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
 export default function ChatWindow({ session, onSend, loading, theme, themeId }) {
   const [input, setInput] = useState('')
   const [attachment, setAttachment] = useState(null)
@@ -175,7 +92,7 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
         className="relative flex-1 overflow-y-auto py-6"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="max-w-2xl mx-auto px-4 space-y-5 h-full">
+        <div className="w-full max-w-2xl mx-auto px-3 md:px-4 space-y-5 h-full">
 
           {session.messages.length === 0 && (
             <motion.div
@@ -198,7 +115,7 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 max-w-xl w-full">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-w-xl w-full">
                 {IDEA_CARDS.map((card, i) => (
                   <motion.button
                     key={i}
@@ -238,7 +155,7 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
                   </div>
                 )}
 
-                <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   msg.role === 'user'
                     ? `${theme.userBubble} rounded-br-none`
                     : `${theme.aiBubble} rounded-bl-none`
@@ -300,8 +217,8 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
       </div>
 
       {/* Input area */}
-      <div className="relative px-4 pb-2 pt-1">
-        <div className="max-w-2xl mx-auto">
+      <div className="relative px-3 md:px-4 pb-2 pt-1">
+        <div className="w-full max-w-2xl mx-auto">
 
           {lastRoast && (
             <div className="mb-1.5">
@@ -407,7 +324,7 @@ export default function ChatWindow({ session, onSend, loading, theme, themeId })
           <p className="text-center mt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
             <span className="text-xs text-zinc-600">
               Roast My Portfolio uses AI and can make mistakes. Not financial advice.{' '}
-              <a
+            <a
                 href="https://youtu.be/QDia3e12czc?si=v1trdggNAU6zFQIA"
                 target="_blank"
                 rel="noopener noreferrer"

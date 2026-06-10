@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import ChatWindow from './components/ChatWindow'
 import ThemeSwitcher from './components/ThemeSwitcher'
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS = {
 export default function App() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [themeId, setThemeId] = useState('brutalist')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const theme = THEMES[themeId]
   const {
     sessions, activeSession, setActiveSessionId,
@@ -28,16 +30,23 @@ export default function App() {
   } = useChat()
 
   return (
-    <div className={`relative flex flex-col h-screen ${theme.bg} ${theme.font} overflow-hidden`}>
+    <div className={`flex flex-col h-screen ${theme.bg} ${theme.font} overflow-hidden`}>
 
       {/* Header */}
-      <div className={`flex items-center justify-between px-6 py-3 border-b ${theme.header} glass shrink-0 z-[100]`}>
-        <span key={themeId} className={`gradient-title-${themeId}`}>
-          Roast My Portfolio
-        </span>
+      <div className={`relative flex items-center justify-between px-4 md:px-6 py-3 border-b ${theme.header} glass shrink-0 z-[100]`}>
+        <div className="flex items-center gap-3">
+          <button
+            className={`md:hidden p-1 rounded-lg ${theme.muted} hover:bg-white/5 transition`}
+            onClick={() => setSidebarOpen(v => !v)}
+          >
+            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+          <span key={themeId} className={`gradient-title-${themeId}`}>
+            Roast My Portfolio
+          </span>
+        </div>
 
-        {/* Session name -- slightly left of center like Claude */}
-        <div className="absolute left-[23%] -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
           <SessionMenu
             session={activeSession}
             theme={theme}
@@ -50,10 +59,26 @@ export default function App() {
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-[90] md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
         <div
-          className={`w-72 border-r ${theme.sidebar} flex flex-col shrink-0 z-10`}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className={`
+            fixed md:relative top-0 left-0 h-full z-[95]
+            w-72 border-r ${theme.sidebar} flex flex-col shrink-0
+            transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            md:translate-x-0
+          `}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingTop: sidebarOpen ? '60px' : '0' }}
         >
           <div
             className="flex-1 overflow-y-auto p-4"
@@ -65,12 +90,13 @@ export default function App() {
               theme={theme}
               sessions={sessions}
               activeSession={activeSession}
-              onSelectSession={setActiveSessionId}
-              onNewSession={newSession}
+              onSelectSession={(id) => { setActiveSessionId(id); setSidebarOpen(false) }}
+              onNewSession={() => { newSession(); setSidebarOpen(false) }}
             />
           </div>
         </div>
 
+        {/* Chat */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <ChatWindow
             session={activeSession}
@@ -80,6 +106,7 @@ export default function App() {
             themeId={themeId}
           />
         </div>
+
       </div>
     </div>
   )
