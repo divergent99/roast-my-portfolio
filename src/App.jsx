@@ -46,7 +46,7 @@ export default function App() {
           </span>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
+        <div className="absolute left-80 hidden md:block">
           <SessionMenu
             session={activeSession}
             theme={theme}
