@@ -46,7 +46,15 @@ export default function App() {
           />
         </div>
 
-        <ThemeSwitcher current={themeId} onChange={setThemeId} />
+        <ThemeSwitcher current={themeId} onChange={(newId) => {
+          if (typeof pendo !== 'undefined' && newId !== themeId) {
+            pendo.track('theme_changed', {
+              previousThemeId: themeId,
+              newThemeId: newId,
+            })
+          }
+          setThemeId(newId)
+        }} />
       </div>
 
       {/* Body */}
