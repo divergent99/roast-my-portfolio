@@ -31,6 +31,19 @@ export const useChat = () => {
     const isFirst = currentMessages.length === 0
     const newTitle = isFirst ? (text?.slice(0, 30) || 'Portfolio Roast') : activeSession.title
 
+    const promptMessageId = crypto.randomUUID()
+
+    if (typeof window !== 'undefined' && window.pendo && window.pendo.trackAgent) {
+      window.pendo.trackAgent("prompt", {
+        agentId: "AYCCRxZXlAWi_CgC8yGBEMCmYW8",
+        conversationId: String(sessionId),
+        messageId: promptMessageId,
+        content: userMsg.content,
+        suggestedPrompt: false,
+        fileUploaded: !!image
+      })
+    }
+
     setSessions(prev => prev.map(s => s.id === sessionId
       ? { ...s, title: newTitle, messages: updatedMessages }
       : s
@@ -48,6 +61,16 @@ export const useChat = () => {
     try {
       const data = await sendMessage({ messages: updatedMessages, image, settings })
       const assistantMsg = { role: 'assistant', content: data.response }
+
+      if (typeof window !== 'undefined' && window.pendo && window.pendo.trackAgent) {
+        window.pendo.trackAgent("agent_response", {
+          agentId: "AYCCRxZXlAWi_CgC8yGBEMCmYW8",
+          conversationId: String(sessionId),
+          messageId: `agent_response_${Date.now()}`,
+          content: data.response
+        })
+      }
+
       setSessions(prev => prev.map(s => s.id === sessionId
         ? { ...s, messages: [...s.messages, assistantMsg] }
         : s
