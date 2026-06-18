@@ -36,6 +36,14 @@ export const useChat = () => {
       : s
     ))
 
+    // Track prompt in Novus
+    if (window.pendo && window.pendo.trackAgent) {
+      window.pendo.trackAgent('prompt', {
+        conversationId: sessionId.toString(),
+        prompt: text || 'portfolio screenshot',
+      })
+    }
+
     setLoading(true)
     try {
       const data = await sendMessage({ messages: updatedMessages, image, settings })
@@ -44,6 +52,15 @@ export const useChat = () => {
         ? { ...s, messages: [...s.messages, assistantMsg] }
         : s
       ))
+
+      // Track response in Novus
+      if (window.pendo && window.pendo.trackAgent) {
+        window.pendo.trackAgent('agent_response', {
+          conversationId: sessionId.toString(),
+          response: data.response,
+        })
+      }
+
     } catch (err) {
       console.error(err)
       setSessions(prev => prev.map(s => s.id === sessionId
